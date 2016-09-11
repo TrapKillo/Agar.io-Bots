@@ -11,7 +11,6 @@ Yes theres a much much better version of this, shame its private
   npm install express figlet serve-index socket.io readline
 3. Install the python modules:
   pip install selenium
-4. Add chromedrive to your path (should fix any errors you get
 
 ## Usage
 
