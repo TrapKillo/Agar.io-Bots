@@ -6,14 +6,12 @@ Yes theres a much much better version of this, shame its private
 
 ## Installation
 
-Add chromedrive to your path (if you get errors)
-
 1. Install nodejs, python and pip
 2. Install the nodejs dependancys: 
   npm install express figlet serve-index socket.io readline
 3. Install the python modules:
   pip install selenium
-  pip install os
+4. Add chromedrive to your path (should fix any errors you get
 
 ## Usage
 
