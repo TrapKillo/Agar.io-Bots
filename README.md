@@ -2,6 +2,8 @@
 
 Free, opensource agar bots that provides easy usage and instalation
 
+Yes theres a much much better version of this, shame its private
+
 ## Installation
 
 1. Install nodejs, python and pip
