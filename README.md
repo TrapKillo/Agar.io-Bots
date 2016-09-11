@@ -14,6 +14,7 @@ Free, opensource agar bots that provides easy usage and instalation
 
 Method 1:
   Run start.bat
+
 Method 2:
   Run the server.js with nodejs: node server.js
   Then run the python bot launcher, python run.py
