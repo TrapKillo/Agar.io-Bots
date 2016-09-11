@@ -9,7 +9,7 @@ mem_gib = int(round(mem_gib - 2))
 
 
 def bot():
-    chromedriver = "./chromedriver.ex"
+    chromedriver = "./chromedriver.exe"
     os.environ["webdriver.chrome.driver"] = chromedriver
     chop = webdriver.ChromeOptions()
     chop.add_extension('./run.crx')
