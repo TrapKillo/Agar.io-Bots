@@ -6,7 +6,7 @@ Yes theres a much much better version of this, shame its private
 
 ## Installation
 
-Add chromedrive to your path (if you get errors) http://stackoverflow.com/questions/36381540/how-can-i-use-a-google-chrome-extension-with-selenium
+Add chromedrive to your path (if you get errors)
 
 1. Install nodejs, python and pip
 2. Install the nodejs dependancys: 
