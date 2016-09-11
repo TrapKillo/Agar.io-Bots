@@ -4,8 +4,7 @@ import os
 import time
 import os
 import threading
-mem_bytes = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
-mem_gib = mem_bytes/(1024.**3)
+mem_gib = int(input("How much ram do you have? Enter in Gigabytes"))
 mem_gib = int(round(mem_gib - 2))
 
 
@@ -13,7 +12,7 @@ def bot():
     chromedriver = "./chromedriver.ex"
     os.environ["webdriver.chrome.driver"] = chromedriver
     chop = webdriver.ChromeOptions()
-    chop.add_extension('run.crx')
+    chop.add_extension('./run.crx')
     driver = webdriver.Chrome(chrome_options=chop)
     driver.set_window_size(1, 1)
     driver.get("http://agar.io")
