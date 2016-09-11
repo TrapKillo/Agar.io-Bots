@@ -30,8 +30,11 @@ Method 2:
 ## Credits
 
 G047
+
 Singa Clan
+
 Chris Pierce
+
 Agar Modding Community
 
 ## License
