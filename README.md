@@ -11,6 +11,7 @@ Yes theres a much much better version of this, shame its private
   npm install express figlet serve-index socket.io readline
 3. Install the python modules:
   pip install selenium
+  pip install os
 
 ## Usage
 
