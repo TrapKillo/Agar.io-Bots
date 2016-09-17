@@ -6,7 +6,7 @@ Yes theres a much much better version of this, shame its private
 
 ## Installation
 
-1. Install nodejs, python and pip
+1. Install nodejs, python and pip (you need python version 2.7)
 2. Install the nodejs dependancys: 
   npm install express figlet serve-index socket.io readline
 3. Install the python modules:
