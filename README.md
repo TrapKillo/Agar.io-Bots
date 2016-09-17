@@ -4,6 +4,10 @@ Free, opensource agar bots that provides easy usage and instalation
 
 Yes theres a much much better version of this, shame its private
 
+## Official Discord 
+
+https://discord.gg/BNswhtG
+
 ## Installation
 
 1. Install nodejs, python and pip (you need python version 2.7)
