@@ -13,7 +13,7 @@ print ("\nOkay good, now  check the nodejs console; You should see 'Browser Conn
 
 def bot():
     try:
-        chromedriver = "chromedriver"
+        chromedriver = "./chromedriver.exe"
         os.environ["webdriver.chrome.driver"] = chromedriver
         options = Options()
         options.add_argument('--proxy-server='+random.choice(proxies))
