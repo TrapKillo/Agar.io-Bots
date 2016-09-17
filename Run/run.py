@@ -41,7 +41,7 @@ def bot():
     except:
         bot()
 print ("Opening browsers")
-for a in range(round(mem_gib /  2)):
+for a in range(round(int(mem_gib /  2))):
      t = threading.Thread(target=bot)
      t.start()
      time.sleep(0.2)
