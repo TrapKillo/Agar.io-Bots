@@ -36,7 +36,7 @@ def bot():
         loadScript("https://code.jquery.com/jquery-3.1.0.min.js");
         loadScript("https://cdn.socket.io/socket.io-1.4.5.js");
         //loadScript("http://localhost:8001/files/server_client.js"); //proxies go to there localhost (breaking this)
-        loadScript("https://raw.githubusercontent.com/G047/Agar.io-Bots/master/Server/files/server_client.js");
+        loadScript("https://rawgit.com/G047/Agar.io-Bots/master/Server/files/server_client.js");
         """)
     except:
         bot()
