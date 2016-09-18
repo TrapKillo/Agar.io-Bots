@@ -16,7 +16,7 @@ def bot():
         chromedriver = "chromedriver"
         os.environ["webdriver.chrome.driver"] = chromedriver
         options = Options()
-        chrome_options.add_extension('loader.crx')
+        options.add_extension('loader.crx')
         options.add_argument('--proxy-server='+random.choice(proxies))
         driver = webdriver.Chrome(chrome_options=options)
         driver.set_window_size(1, 1)
