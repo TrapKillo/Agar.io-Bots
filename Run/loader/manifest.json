@@ -1,0 +1,26 @@
+{
+    "manifest_version": 2,
+    "version": "1.0",
+    "name": "AgarXTRA Animated Skins",
+    "description": "Add 50+ animated skins to agar.io mod made by Turtle 🐢 Clan.",
+    "permissions": [
+        "webRequest",
+        "webRequestBlocking",
+        "tabs",
+        "*://*.agar.io/*"
+    ],
+    "web_accessible_resources": [
+        "assets/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.agar.io/*"
+            ],
+            "run_at": "document_start",
+            "js": [
+                "assets/js/inject.js"
+            ]
+        }
+    ]
+}

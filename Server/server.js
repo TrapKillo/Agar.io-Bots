@@ -107,6 +107,6 @@ rl.on('line', (line) => {
     }
     if (line==='help') {
         console.log('Current list of commands:');
-        console.log("    clear - Clears Console\n    uuid - sets admin UUID\n    help - Shows help\n    reconnect - Reconnects all the bots, really someone should add this :)")
+        console.log("    clear - Clears Console\n    uuid - sets admin UUID\n    help - Shows help\n    reconnect - Reconnects all the bots")
     }
 });

