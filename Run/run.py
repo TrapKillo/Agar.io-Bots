@@ -1,4 +1,4 @@
-with open("../proxies") as f:
+with open("./proxies") as f:
     proxies = f.readlines()
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
