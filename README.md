@@ -39,7 +39,9 @@ Method 2:
 
 G047
 
-Singa Clan
+Singa Clan actually fuck singa clan
+
+Turtle Clan
 
 Chris Pierce
 
