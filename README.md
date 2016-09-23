@@ -1,3 +1,5 @@
+# Discontinued   (For now)
+
 Quick message to miniclip: I know your reading this, please fix your game: if me releaseing some bots every time you decide to update your game until it is fixed is the only way you will fix your game, then that is the path I will do. :)
 
 # Agar.io Bots
