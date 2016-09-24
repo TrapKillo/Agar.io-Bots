@@ -41,11 +41,9 @@ Method 2:
 
 G047
 
-Singa Clan actually fuck singa clan
-
 Turtle Clan
 
-Chris Pierce
+Chris Pierce (A huge helper)
 
 Agar Modding Community
 
