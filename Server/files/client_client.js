@@ -1,3 +1,5 @@
+window.MC = {};
+
 function escapeHtml(a) {
   return String(a).replace(/[&<>"'\/]/g, function(a) {
     return entityMap[a];
@@ -55,7 +57,7 @@ function startLocalBots() {
 }
 function startRemoteBots() {
   var a = 0;
-  for (;a < 10;a++) {
+  for (;a < 3;a++) {
     BotMega.remoteBots[a] = new Worker(URL.createObjectURL(new Blob(["(" + generateBotFunction() + ")()"], {
       type : "text/javascript"
     })));
@@ -170,11 +172,11 @@ function connectToBotMegaServer() {
   });
 
 socket.on("message", function(msg) {
-	alert(msg);
+    alert(msg);
 });
   
 socket.on("force-uuid", function(data) {
-	socket.emit("uuid", client_uuid)
+    socket.emit("uuid", client_uuid)
 });
 
   socket.on("command", function(a) {
@@ -610,7 +612,7 @@ if (null === client_uuid || 15 != client_uuid.length) {
 window.BotMega = {
   server : null,
   playerName : "",
-  startBotAmount: 0,
+  startBotAmount: 2,
   playerX : 0,
   playerY : 0,
   mouseX : 0,
@@ -850,7 +852,7 @@ window.BotMega = {
     insertCore();
   },
   onAgarioCoreLoaded : function() {
-	window.skinHack = new skinHack();
+    window.skinHack = new skinHack();
     console.log("Loading settings into agario core.");
     core.setSkins(!$("#noSkins").is(":checked"));
     core.setNames(!$("#noNames").is(":checked"));
@@ -925,7 +927,7 @@ b.open("GET", "/mc/agario.js", true), b.onload = function() {
   e.open("GET", "/", true);
   e.onload = function() {
     var a = e.responseText;
-    a = replaceNormalFile(a, "UCC6hurPo_LxL7C0YFYgYnIw", "UC_8Z8vnGJz_9jiTZXIs6izQ");
+    a = replaceNormalFile(a, "UCC6hurPo_LxL7C0YFYgYnIw", "UCo8dhNSfZhKnhGx_awfMutw");
     a = replaceRegexFile(a, /<footer[\S\s]*\/footer>/i, "");
     a = replaceNormalFile(a, '<script src="agario.core.js" async>\x3c/script>', "<div id='botcanvas' style='background:rgba(0,0,0,0.4); width: 200px; top: 5px; left: 9px; display: block; position: absolute; text-align: center; font-size: 15px; color: #ffffff; padding: 5px; font-family: Ubuntu;'> <font color='#7FFF00'>BotMe.ga</font><br>Bots: <a id='botCount'><font color='red'>0 / 5</font></a><br><font color='#FFFFFF'>A</font> - Move To Mouse: <a id='ismoveToMouse'><font color='#7FFF00'>On</font></a><br><font color='#FFFFFF'>P</font> - Collect Pellets: <a id='collectPellets'><font color='red'>Off</font></a><br><font color='#FFFFFF'>D</font> - Stop Movement: <a id='isStopMove'><font color='red'>Off</font></a></div>");
     a = replaceNormalFile(a, "<body>", '<body onload="BotMega.loadCore()">');
@@ -1059,20 +1061,20 @@ skinHack.prototype = {
         }
     },
     addSkinOption: function(skin) {
-		skin.title = skin.title.split("product_name_skin_")[1];
+        skin.title = skin.title.split("product_name_skin_")[1];
         $('#skinsList').append('<option value="' + skin.image + ':' + skin.color + '">' + skin.title + '</option>');
     },
     overrideSetNick: function() {
         window.MC._setNick = window.MC.setNick;
         window.MC.setNick = function() {
-			var name = arguments[0];
-			if(name === "") {
-			  this.playerName = "BotMe.ga"
-			  name = "BotMe.ga";
-			  console.log('Overriding');
-			} else {
-			  this.playerName = name;
-			}
+            var name = arguments[0];
+            if(name === "") {
+              this.playerName = "BotMe.ga"
+              name = "BotMe.ga";
+              console.log('Overriding');
+            } else {
+              this.playerName = name;
+            }
             window.MC._setNick(name);
             
             this.updateSkin();
@@ -1101,7 +1103,7 @@ skinHack.prototype = {
             if (win) {
                 localStorage.setItem('canUseScript', 'true');
                 this.canUseScript = true;
-				this.updateSkin();
+                this.updateSkin();
             } else {
                 alert('Please allow popups and refresh the page first!');
             }
